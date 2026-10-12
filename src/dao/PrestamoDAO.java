@@ -169,6 +169,12 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
         String sql =
                 "SELECT * FROM prestamos WHERE id=?";
 
+        EstudianteDAO estudianteDAO =
+                new EstudianteDAO();
+
+        LibroDAO libroDAO =
+                new LibroDAO();
+
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql)) {
 
@@ -183,6 +189,18 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
 
                 prestamo.setId(
                         rs.getInt("id")
+                );
+
+                prestamo.setEstudiante(
+                        estudianteDAO.buscarPorId(
+                                rs.getInt("id_estudiante")
+                        )
+                );
+
+                prestamo.setLibro(
+                        libroDAO.buscarPorId(
+                                rs.getInt("id_libro")
+                        )
                 );
 
                 prestamo.setFechaPrestamo(
@@ -223,6 +241,12 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
         String sql =
                 "SELECT * FROM prestamos";
 
+        EstudianteDAO estudianteDAO =
+                new EstudianteDAO();
+
+        LibroDAO libroDAO =
+                new LibroDAO();
+
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql);
 
@@ -238,22 +262,30 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
                         rs.getInt("id")
                 );
 
+                prestamo.setEstudiante(
+                        estudianteDAO.buscarPorId(
+                                rs.getInt("id_estudiante")
+                        )
+                );
+
+                prestamo.setLibro(
+                        libroDAO.buscarPorId(
+                                rs.getInt("id_libro")
+                        )
+                );
+
                 prestamo.setFechaPrestamo(
-                        rs.getDate(
-                                "fecha_prestamo"
-                        ).toLocalDate()
+                        rs.getDate("fecha_prestamo")
+                                .toLocalDate()
                 );
 
                 prestamo.setFechaDevolucion(
-                        rs.getDate(
-                                "fecha_devolucion"
-                        ).toLocalDate()
+                        rs.getDate("fecha_devolucion")
+                                .toLocalDate()
                 );
 
                 prestamo.setDevuelto(
-                        rs.getBoolean(
-                                "devuelto"
-                        )
+                        rs.getBoolean("devuelto")
                 );
 
                 prestamos.add(prestamo);
@@ -266,6 +298,7 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
                     "Error al listar préstamos: "
                             + e.getMessage()
             );
+
         }
 
         return prestamos;
@@ -317,6 +350,123 @@ public class PrestamoDAO implements CrudDAO<Prestamo> {
         prestamo.setDevuelto(true);
 
         return actualizar(prestamo);
+    }
+
+    public List<Object[]> librosMasPrestados() {
+
+        List<Object[]> datos = new ArrayList<>();
+
+        String sql =
+                "SELECT l.titulo, COUNT(*) cantidad " +
+                        "FROM prestamos p " +
+                        "INNER JOIN libros l ON p.id_libro = l.id " +
+                        "GROUP BY l.titulo " +
+                        "ORDER BY cantidad DESC";
+
+        try (
+                PreparedStatement stmt =
+                        conn.prepareStatement(sql);
+
+                ResultSet rs =
+                        stmt.executeQuery()
+        ) {
+
+            while (rs.next()) {
+
+                datos.add(new Object[]{
+                        rs.getString("titulo"),
+                        rs.getInt("cantidad")
+                });
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error reporte libros más prestados: "
+                            + e.getMessage()
+            );
+        }
+
+        return datos;
+    }
+
+    public List<Object[]> historialEstudiantes() {
+
+        List<Object[]> datos = new ArrayList<>();
+
+        String sql =
+                "SELECT e.nombre, l.titulo, " +
+                        "p.fecha_prestamo, p.fecha_devolucion " +
+                        "FROM prestamos p " +
+                        "INNER JOIN estudiantes e ON p.id_estudiante = e.id " +
+                        "INNER JOIN libros l ON p.id_libro = l.id";
+
+        try (
+                PreparedStatement stmt =
+                        conn.prepareStatement(sql);
+
+                ResultSet rs =
+                        stmt.executeQuery()
+        ) {
+
+            while (rs.next()) {
+
+                datos.add(new Object[]{
+                        rs.getString("nombre"),
+                        rs.getString("titulo"),
+                        rs.getDate("fecha_prestamo"),
+                        rs.getDate("fecha_devolucion")
+                });
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error historial estudiantes: "
+                            + e.getMessage()
+            );
+        }
+
+        return datos;
+    }
+
+    public List<Object[]> prestamosActivos() {
+
+        List<Object[]> datos = new ArrayList<>();
+
+        String sql =
+                "SELECT l.titulo, e.nombre, p.fecha_devolucion " +
+                        "FROM prestamos p " +
+                        "INNER JOIN libros l ON p.id_libro = l.id " +
+                        "INNER JOIN estudiantes e ON p.id_estudiante = e.id " +
+                        "WHERE p.devuelto = false";
+
+        try (
+                PreparedStatement stmt =
+                        conn.prepareStatement(sql);
+
+                ResultSet rs =
+                        stmt.executeQuery()
+        ) {
+
+            while (rs.next()) {
+
+                datos.add(new Object[]{
+                        rs.getString("titulo"),
+                        rs.getString("nombre"),
+                        rs.getDate("fecha_devolucion")
+                });
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error préstamos activos: "
+                            + e.getMessage()
+            );
+        }
+
+        return datos;
     }
 
 }

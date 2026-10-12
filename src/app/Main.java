@@ -1,22 +1,21 @@
 package app;
 
 import database.DatabaseConnection;
+import view.LoginView;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        if (DatabaseConnection
-                .getInstance()
-                .getConnection() != null) {
+        System.out.println(
+                DatabaseConnection
+                        .getInstance()
+                        .getConnection()
+        );
 
-            System.out.println("Conexion exitosa");
+        LoginView loginView =
+                new LoginView();
 
-        } else {
-
-            System.out.println("Error de conexion");
-
-        }
-
+        loginView.setVisible(true);
     }
 }

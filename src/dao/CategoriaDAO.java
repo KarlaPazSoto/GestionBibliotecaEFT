@@ -93,4 +93,36 @@ public class CategoriaDAO implements CrudDAO<Categoria> {
         return categorias;
     }
 
+    public Categoria buscarPorNombre(String nombre) {
+
+        String sql =
+                "SELECT * FROM categorias WHERE nombre = ?";
+
+        try (PreparedStatement stmt =
+                     conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nombre);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+
+                return new Categoria(
+                        rs.getInt("id"),
+                        rs.getString("nombre")
+                );
+
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println(
+                    "Error al buscar categoria: "
+                            + e.getMessage()
+            );
+        }
+
+        return null;
+    }
+
 }

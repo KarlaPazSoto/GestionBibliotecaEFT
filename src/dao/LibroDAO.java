@@ -1,6 +1,7 @@
 package dao;
 
 import database.DatabaseConnection;
+import model.Categoria;
 import model.Libro;
 
 import java.sql.*;
@@ -10,11 +11,15 @@ import java.util.List;
 public class LibroDAO implements CrudDAO<Libro> {
 
     private final Connection conn;
+    private final CategoriaDAO categoriaDAO;
 
     public LibroDAO() {
+
         conn = DatabaseConnection
                 .getInstance()
                 .getConnection();
+
+        categoriaDAO = new CategoriaDAO();
     }
 
     @Override
@@ -127,6 +132,13 @@ public class LibroDAO implements CrudDAO<Libro> {
                 libro.setEditorial(rs.getString("editorial"));
                 libro.setStock(rs.getInt("stock"));
 
+                Categoria categoria =
+                        categoriaDAO.buscarPorId(
+                                rs.getInt("id_categoria")
+                        );
+
+                libro.setCategoria(categoria);
+
                 return libro;
             }
 
@@ -166,6 +178,13 @@ public class LibroDAO implements CrudDAO<Libro> {
                 libro.setIsbn(rs.getString("isbn"));
                 libro.setEditorial(rs.getString("editorial"));
                 libro.setStock(rs.getInt("stock"));
+
+                Categoria categoria =
+                        categoriaDAO.buscarPorId(
+                                rs.getInt("id_categoria")
+                        );
+
+                libro.setCategoria(categoria);
 
                 libros.add(libro);
             }

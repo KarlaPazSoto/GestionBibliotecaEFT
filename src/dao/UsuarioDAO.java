@@ -175,6 +175,9 @@ public class UsuarioDAO implements CrudDAO<Usuario> {
             String correo,
             String password) {
 
+        System.out.println("Correo recibido: " + correo);
+        System.out.println("Password recibido: " + password);
+
         String sql =
                 "SELECT * FROM usuarios " +
                         "WHERE correo=? AND password=?";
@@ -190,16 +193,16 @@ public class UsuarioDAO implements CrudDAO<Usuario> {
 
             if (rs.next()) {
 
-                return crearUsuarioDesdeResultSet(rs);
+                System.out.println("USUARIO ENCONTRADO");
 
+                return crearUsuarioDesdeResultSet(rs);
             }
+
+            System.out.println("NO SE ENCONTRO USUARIO");
 
         } catch (SQLException e) {
 
-            System.out.println(
-                    "Error en autenticación: "
-                            + e.getMessage()
-            );
+            e.printStackTrace();
 
         }
 
